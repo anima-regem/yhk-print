@@ -29,6 +29,16 @@
       </div>
     </div>
 
+    <details id="relay-setup" class="relay-setup" hidden>
+      <summary>Print through your Mac</summary>
+      <div class="help-content">
+        <p>Firefox and other browsers without Web Bluetooth can send jobs through the Mac relay.</p>
+        <p><strong>On your Mac:</strong> Run <code>./yhk web --no-open</code>, then <a href="http://127.0.0.1:7314/">open the local print app</a> in this browser.</p>
+        <p><strong>On your phone:</strong> Run <code>./yhk web --share --no-open</code> on your Mac. Connect both devices to the same Wi-Fi and open the address shown in the Mac terminal.</p>
+        <p><a href="https://github.com/anima-regem/yhk-print#mac-relay">Mac relay setup instructions</a></p>
+      </div>
+    </details>
+
     <div class="workspace">
       <section class="compose" aria-labelledby="compose-heading">
         <h2 id="compose-heading">Compose</h2>
@@ -81,8 +91,8 @@
       <summary>Connection and installation help</summary>
       <div class="help-content">
         <p><strong>Android:</strong> Open this page in Chrome, then tap Connect printer. Use Chrome’s Install app option to add it to your home screen.</p>
-        <p><strong>iPhone:</strong> Open the GitHub Pages URL in <a href="https://apps.apple.com/app/id1492822055">Bluefy</a> for direct Bluetooth. To print from Safari, run <code>./yhk web --share</code> on your Mac and open the address it displays on the same Wi-Fi.</p>
-        <p><strong>Mac:</strong> Use Chrome for direct Bluetooth, or run <code>./yhk web</code> to print through the Mac in Safari.</p>
+        <p><strong>iPhone:</strong> Open the GitHub Pages URL in <a href="https://apps.apple.com/app/id1492822055">Bluefy</a> for direct Bluetooth.</p>
+        <p><strong>Firefox and Safari:</strong> Use the <a href="https://github.com/anima-regem/yhk-print#mac-relay">Mac relay</a> on your computer or phone.</p>
         <p>Keep the printer on and nearby. Disconnect it from other printing apps before connecting here.</p>
       </div>
     </details>

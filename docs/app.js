@@ -15,6 +15,8 @@ const dropArea = byID("drop-area");
 const message = byID("message");
 const pairing = byID("pairing");
 const keyInput = byID("key");
+const relaySetup = byID("relay-setup");
+const canUseBluetooth = typeof navigator.bluetooth?.requestDevice === "function";
 
 let photo = null;
 let raster = null;
@@ -23,6 +25,7 @@ let loadingImage = false;
 let connection = "";
 let busy = false;
 let relay = null;
+let checkingRelay = location.protocol === "http:";
 let relayKey = "";
 let installPrompt;
 const direct = new BrowserPrinter(() => {
@@ -38,15 +41,18 @@ function announce(text, error = false) {
 function updateButtons() {
   printButton.disabled = busy || loadingImage || raster === null || !connection;
   clearButton.disabled = busy || (!text.value && !photo && !loadingImage);
-  connectButton.disabled = busy;
+  connectButton.disabled = busy || checkingRelay;
   text.disabled = size.disabled = image.disabled = byID("remove").disabled = busy;
 }
 
 function setConnection(name = "") {
   connection = name;
   byID("connection").classList.toggle("connected", Boolean(name));
-  byID("connection-label").textContent = name ? `${name} · Connected` : "YHK-7314 · Disconnected";
-  connectButton.textContent = name ? "Disconnect" : "Connect printer";
+  const needsRelay = !checkingRelay && !relay && !canUseBluetooth;
+  const status = checkingRelay ? "Checking connection…" : needsRelay ? "Mac relay required" : "Disconnected";
+  byID("connection-label").textContent = name ? `${name} · Connected` : `YHK-7314 · ${status}`;
+  connectButton.textContent = name ? "Disconnect" : needsRelay ? "Set up Mac relay" : "Connect printer";
+  relaySetup.hidden = !needsRelay;
   updateButtons();
 }
 
@@ -112,7 +118,11 @@ async function relayRequest(route, payload) {
   });
   const result = await response.json();
   if (!response.ok) {
-    if (response.status === 401) relayKey = "";
+    if (response.status === 401) {
+      relayKey = "";
+      keyInput.value = "";
+      setConnection();
+    }
     throw new Error(result.message);
   }
   return result;
@@ -146,10 +156,9 @@ connectButton.addEventListener("click", async () => {
     else await connectRelay();
     return;
   }
-  if (!navigator.bluetooth) {
-    const help = byID("help");
-    help.open = true;
-    announce("This browser cannot connect directly. See the connection options below.", true);
+  if (!canUseBluetooth) {
+    relaySetup.open = true;
+    relaySetup.querySelector("summary").focus();
     return;
   }
   busy = true;
@@ -241,8 +250,8 @@ if (window.isSecureContext && "serviceWorker" in navigator) {
 }
 
 // Only the local Mac server exposes relay.json.
-if (location.protocol === "http:") {
-  connectButton.disabled = true;
+setConnection();
+if (checkingRelay) {
   fetch("./relay.json", {cache: "no-store"})
     .then(response => response.ok ? response.json() : null)
     .then(config => {
@@ -252,5 +261,8 @@ if (location.protocol === "http:") {
       if (key) relayKey = key;
     })
     .catch(() => {})
-    .finally(updateButtons);
+    .finally(() => {
+      checkingRelay = false;
+      setConnection();
+    });
 }

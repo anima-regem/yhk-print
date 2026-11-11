@@ -119,6 +119,7 @@ button { min-height: 42px; padding: 8px 15px; border: 1px solid transparent; bor
 .paper p { padding: 24px 13px; color: #656b61; font-size: .87rem; text-align: center; }
 canvas { display: block; width: 100%; height: auto; }
 details { margin-top: 22px; color: var(--muted); font-size: .9rem; }
+.relay-setup { margin: 0 0 18px; padding: 4px 15px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
 summary { width: fit-content; font-weight: 650; color: var(--green); padding-block: 8px; }
 .help-content { max-width: 75ch; }
 .help-content p + p { margin-top: 8px; }

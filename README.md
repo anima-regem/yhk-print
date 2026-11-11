@@ -8,9 +8,7 @@ Print text, pictures, or both on the YHK-7314 Bluetooth thermal printer. The web
 
 - **Android.** Open the web app in Chrome, tap **Connect printer**, and choose **YHK-7314**. Chrome’s **Install app** option adds it to your home screen. After the first visit, the app can load offline.
 - **iPhone with direct Bluetooth.** Open the same web address inside [Bluefy](https://apps.apple.com/app/id1492822055), allow Bluetooth access, and tap **Connect printer**. Keep the app open during printing.
-- **iPhone with Safari.** Run `./yhk web --share` on your Mac and open the address it prints on your iPhone. Both devices must use the same Wi-Fi. The Mac sends the slip to the printer over Bluetooth. Leave the Mac awake and the command running. The address includes a pairing key that works until you stop the relay. If Safari asks for local network access, allow it.
-
-The GitHub Pages site also opens in Safari, but direct Bluetooth requires a browser with Web Bluetooth support.
+- **Firefox or Safari on your phone.** Use the [Mac relay](#mac-relay) to print from the browser over Wi-Fi.
 
 ## Print from your Mac
 
@@ -26,9 +24,18 @@ cd yhk-print
 ./yhk status
 ```
 
-The launcher builds the native command on first use. Allow Bluetooth in macOS if prompted. Text sizes are 18, 24, or 32 printer dots. Use `./yhk web` for a local web interface that works in Safari and other browsers. The local server requires Python 3.9+ and has no third-party packages. You can also use the GitHub Pages app in Chrome on your Mac.
+The launcher builds the native command on first use. Allow Bluetooth in macOS if prompted. Text sizes are 18, 24, or 32 printer dots. Use the GitHub Pages app in Chrome on your Mac for direct Bluetooth, or use the Mac relay to print from Firefox or Safari.
 
 Load paper, turn on the printer, and disconnect it from other printing apps before connecting. If it reports a printer error, charge it and check the lid and paper. The printer acknowledges data transfers, so check the paper to confirm the result.
+
+## Mac relay
+
+Firefox and Safari do not expose Web Bluetooth. The relay serves the same print app and sends jobs to the YHK-7314 through your Mac’s Bluetooth. It requires Python 3.9 or later.
+
+- **Firefox or Safari on your Mac.** Run `./yhk web --no-open` from the project folder, then open <http://127.0.0.1:7314/> in your browser.
+- **Firefox or Safari on your phone.** Run `./yhk web --share --no-open` and open the full address shown in the Mac terminal, including the pairing key. Connect the phone and Mac to the same Wi-Fi. If the browser asks for local network access, allow it.
+
+Tap **Connect printer**, compose your slip, and select **Print slip**. Leave the Mac awake and the relay running while you print.
 
 ## Development
 
