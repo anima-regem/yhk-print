@@ -171,7 +171,7 @@ async function loadImage(file, restoring = false, name = file?.name || "Image") 
     byID("file-name").textContent = photoName;
     byID("file-row").hidden = false;
     if (!restoring) byID("image-tools").open = true;
-    if (!restoring || draftRevision !== 0) persistDraft();
+    if (!restoring || draftRevision !== 0) persistDraft(true);
     announce(composeMessage, "");
     announce(message, "");
   } catch {
@@ -324,19 +324,21 @@ download.addEventListener("click", () => {
   }, "image/png");
 });
 
-function persistDraft() {
+function persistDraft(immediate = false) {
   const revision = ++draftRevision;
   const draft = {text: text.value, settings: slipSettings(), photo: photoFile, photoName};
   clearTimeout(draftTimer);
   announce(draftMessage, "");
-  draftTimer = setTimeout(async () => {
+  const save = async () => {
     try {
       await writeRecord("draft", draft);
       if (revision === draftRevision && (draft.text.trim() || draft.photo)) announce(draftMessage, "Draft saved");
     } catch {
       if (revision === draftRevision) announce(draftMessage, "Draft could not be saved.");
     }
-  }, 180);
+  };
+  if (immediate) save();
+  else draftTimer = setTimeout(save, 180);
 }
 
 async function restoreDraft() {
@@ -356,11 +358,11 @@ async function restoreDraft() {
   }
 }
 
-function refreshDraft() {
+function refreshDraft(immediate = false) {
   announce(composeMessage, "");
   announce(message, "");
   updatePreview();
-  persistDraft();
+  persistDraft(immediate);
 }
 
 function renderHistory() {
@@ -423,9 +425,9 @@ historyDialog.addEventListener("cancel", event => {
   if (busy) event.preventDefault();
 });
 
-text.addEventListener("input", refreshDraft);
+text.addEventListener("input", () => refreshDraft());
 for (const control of Object.values(controls)) {
-  control.addEventListener(control.type === "range" ? "input" : "change", refreshDraft);
+  control.addEventListener(control.type === "range" ? "input" : "change", () => refreshDraft());
 }
 rotate.addEventListener("click", () => {
   rotation = (rotation + 90) % 360;
@@ -434,13 +436,13 @@ rotate.addEventListener("click", () => {
 image.addEventListener("change", () => loadImage(image.files[0]));
 byID("remove").addEventListener("click", () => {
   clearImage();
-  refreshDraft();
+  refreshDraft(true);
   image.focus();
 });
 clearButton.addEventListener("click", () => {
   text.value = "";
   clearImage();
-  refreshDraft();
+  refreshDraft(true);
   text.focus();
 });
 document.addEventListener("paste", event => {
