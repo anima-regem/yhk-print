@@ -1,8 +1,8 @@
 const prefix = "yhk-print-";
-const cacheName = prefix + "v4";
+const cacheName = prefix + "v5";
 const files = [
-  "./", "./index.html", "./style.css", "./app.js", "./raster.js", "./bluetooth.js",
-  "./instrument-sans.woff2", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png",
+  "./", "./index.html", "./style.css", "./app.js", "./raster.js", "./bluetooth.js", "./storage.js",
+  "./instrument-sans.woff2", "./bricolage-grotesque.woff2", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png",
 ];
 
 self.addEventListener("install", event => {

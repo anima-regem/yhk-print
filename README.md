@@ -10,6 +10,12 @@ Print text, pictures, or both on the YHK-7314 Bluetooth thermal printer. The web
 - **iPhone with direct Bluetooth.** Open the same web address inside [Bluefy](https://apps.apple.com/app/id1492822055), allow Bluetooth access, and tap **Connect printer**. Keep the app open during printing.
 - **Firefox or Safari on your phone.** Use the [Mac relay](#mac-relay) to print from the browser over Wi-Fi.
 
+## Edit a slip in the browser
+
+Choose a typeface, size, and alignment for text. Add a photo using the file picker, drag and drop, or paste. Rotate the image or adjust its scale, brightness, and print style. Download PNG saves the black-and-white preview.
+
+The app saves your draft and the last five jobs it sent in this browser. Open Recent prints to send a job again without replacing your current draft.
+
 ## Print from your Mac
 
 Install the Apple command line tools once with `xcode-select --install` if `xcrun --find swiftc` cannot locate the Swift compiler.
@@ -43,4 +49,4 @@ Tap **Connect printer**, compose your slip, and select **Print slip**. Leave the
 
 The hosted app processes text and pictures on-device. The optional Mac relay transfers the rendered bitmap over your Wi-Fi. Use it on a network you trust and stop it with Control-C when finished.
 
-Protocol references include the [YHK Mini Printer BLE notes](https://github.com/joshmcarthur/yhk-mini-printer/blob/main/docs/protocol.md) and [BLEThermalPrinterYHK](https://github.com/fun6400/BLEThermalPrinterYHK). The project uses the [MIT license](LICENSE). The bundled Instrument Sans font uses its own [SIL Open Font License](docs/OFL-Instrument-Sans.txt).
+Protocol references include the [YHK Mini Printer BLE notes](https://github.com/joshmcarthur/yhk-mini-printer/blob/main/docs/protocol.md) and [BLEThermalPrinterYHK](https://github.com/fun6400/BLEThermalPrinterYHK). The project uses the [MIT license](LICENSE). The bundled [Instrument Sans](docs/OFL-Instrument-Sans.txt) and [Bricolage Grotesque](docs/OFL-Bricolage-Grotesque.txt) fonts use the SIL Open Font License.

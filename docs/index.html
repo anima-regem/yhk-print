@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f0e7">
+  <meta name="theme-color" content="#f2eee3">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="description" content="Print text and pictures on your YHK-7314 thermal printer.">
+  <meta name="description" content="Compose and print text and images on your YHK-7314 thermal printer.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>YHK Print</title>
   <link rel="manifest" href="./manifest.webmanifest">
@@ -16,20 +16,21 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="brand">
-      <img src="./icons/icon-192.png" alt="" width="36" height="36">
-      <h1>YHK Print</h1>
+    <div class="masthead">
+      <h1>YHK Print<span class="brand-mark" aria-hidden="true"></span></h1>
+      <div class="utility">
+        <button id="history" type="button" class="secondary">Recent prints</button>
+        <button id="install" type="button" class="secondary" hidden>Install app</button>
+      </div>
     </div>
-    <div class="printer">
+    <div class="connection-bar">
       <span id="connection" class="connection" aria-live="polite"><span class="dot"></span><span id="connection-label">YHK-7314 · Disconnected</span></span>
       <button class="secondary" id="connect" type="button">Connect printer</button>
+      <p id="connection-message" class="message" role="status"></p>
     </div>
-    <button id="install" class="secondary" type="button" hidden>Install app</button>
-    <p id="connection-message" class="message" role="status"></p>
   </header>
 
   <main>
-
     <details id="relay-setup" class="relay-setup" hidden>
       <summary>Print through your Mac</summary>
       <div class="help-content">
@@ -42,50 +43,85 @@
 
     <div class="workspace">
       <section class="compose" aria-labelledby="compose-heading">
-        <h2 id="compose-heading">Slip content</h2>
-        <div class="text-heading">
+        <div class="section-head">
+          <h2 id="compose-heading">Compose</h2>
+          <p id="draft-message" class="draft-message" role="status"></p>
+        </div>
+
+        <div class="text-panel">
           <label for="text">Text</label>
-          <label class="size-control" for="size">Size
-            <select id="size">
-              <option value="18">Small</option>
-              <option value="24" selected>Medium</option>
-              <option value="32">Large</option>
-            </select>
+          <textarea id="text" maxlength="8000" rows="4" placeholder="Write a note or caption"></textarea>
+          <div class="fields text-settings">
+            <label for="font">Typeface
+              <select id="font"><option value="sans">Sans</option><option value="mono">Mono</option></select>
+            </label>
+            <label for="size">Size
+              <select id="size">
+                <option value="18">Small</option>
+                <option value="24" selected>Medium</option>
+                <option value="32">Large</option>
+              </select>
+            </label>
+            <label for="align">Align
+              <select id="align">
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="image-panel">
+          <div class="image-heading">Image</div>
+          <label class="drop-area" id="drop-area" for="image">
+            <input class="visually-hidden" type="file" id="image" accept="image/*">
+            <strong id="image-action">Choose an image</strong>
+            <small>or drop or paste one</small>
           </label>
+          <div class="file-row" id="file-row" hidden>
+            <span id="file-name"></span>
+            <button type="button" id="remove" class="quiet">Remove image</button>
+          </div>
+          <details class="image-tools" id="image-tools" hidden open>
+            <summary>Image adjustments</summary>
+            <div class="fields photo-settings">
+              <label for="brightness">Brightness <output id="brightness-value" for="brightness">0</output>
+                <input id="brightness" type="range" min="-60" max="60" value="0">
+              </label>
+              <label for="image-width">Scale <output id="image-width-value" for="image-width">100%</output>
+                <input id="image-width" type="range" min="25" max="100" value="100">
+              </label>
+              <label for="tone">Print style
+                <select id="tone"><option value="photo">Photo</option><option value="solid">Line art</option></select>
+              </label>
+              <button id="rotate" type="button" class="secondary">Rotate 90°</button>
+            </div>
+          </details>
+          <p id="compose-message" class="message" role="status"></p>
         </div>
-        <textarea id="text" maxlength="8000" rows="4" placeholder="Write a note or caption"></textarea>
-
-        <div class="image-heading">Image</div>
-        <label class="drop-area" id="drop-area" for="image">
-          <input class="visually-hidden" type="file" id="image" accept="image/*">
-          <strong>Choose an image</strong>
-          <small>or drop it here</small>
-        </label>
-        <div class="file-row" id="file-row" hidden>
-          <span id="file-name"></span>
-          <button type="button" id="remove" class="quiet">Remove</button>
-        </div>
-
-        <p id="compose-message" class="message" role="status"></p>
       </section>
 
       <section class="preview" aria-labelledby="preview-heading">
         <div class="preview-heading">
           <h2 id="preview-heading">Print preview</h2>
-          <span>58 mm paper</span>
+          <p class="paper-spec"><span>58 mm paper</span><span id="dimensions" hidden></span></p>
         </div>
-        <div class="paper" id="paper" role="region" aria-label="Slip on paper">
-          <p id="empty">Add text or an image to see the preview.</p>
-          <canvas id="preview" width="384" height="1" role="img" aria-label="Black-and-white print preview" hidden></canvas>
+        <div class="stage">
+          <div class="paper" id="paper" role="region" aria-label="Slip on paper">
+            <p id="empty">Add text or an image to see the preview.</p>
+            <canvas id="preview" width="384" height="1" role="img" aria-label="Black-and-white print preview" hidden></canvas>
+          </div>
+        </div>
+        <div class="print-controls">
+          <p id="message" class="message" role="status"></p>
+          <div class="actions">
+            <button type="button" class="quiet" id="clear" disabled>Clear</button>
+            <button type="button" class="secondary" id="download" disabled>Download PNG</button>
+            <button class="primary" id="print" type="button" disabled>Print slip</button>
+          </div>
         </div>
       </section>
-      <div class="print-controls">
-        <p id="message" class="message" role="status"></p>
-        <div class="actions">
-          <button type="button" class="quiet" id="clear" disabled>Clear</button>
-          <button class="primary" id="print" type="button" disabled>Print slip</button>
-        </div>
-      </div>
     </div>
 
     <details id="help">
@@ -100,7 +136,7 @@
   </main>
 
   <footer>
-    <span>Your browser prepares each slip.</span>
+    <span>Your drafts and recent prints stay in this browser.</span>
     <a href="https://github.com/anima-regem/yhk-print">Source on GitHub</a>
   </footer>
 
@@ -110,10 +146,20 @@
       <label for="key">Pairing key from the Mac terminal</label>
       <input id="key" type="text" required autocomplete="off" autocapitalize="none" spellcheck="false">
       <div class="actions">
-        <button type="submit" class="primary">Connect</button>
         <button type="button" id="cancel-pairing" class="quiet">Cancel</button>
+        <button type="submit" class="primary">Connect</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="history-dialog" aria-labelledby="history-title">
+    <div class="section-head">
+      <h2 id="history-title">Recent prints</h2>
+      <button id="close-history" class="secondary" type="button">Done</button>
+    </div>
+    <p id="history-empty">Your last five print jobs appear here.</p>
+    <ul id="history-list" class="history-list"></ul>
+    <p id="history-message" class="message" role="status"></p>
   </dialog>
 </body>
 </html>
