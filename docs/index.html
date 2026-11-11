@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f0e7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="description" content="Print text and pictures on your YHK-7314 thermal printer.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>YHK Print</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><img src="./icons/icon-192.png" alt="" width="40" height="40"> <span>YHK Print</span></div>
+    <button id="install" class="secondary" type="button" hidden>Install app</button>
+  </header>
+
+  <main>
+    <div class="intro">
+      <h1>Print a slip</h1>
+      <div class="printer">
+        <span id="connection" class="connection" aria-live="polite"><span class="dot"></span><span id="connection-label">YHK-7314 · Disconnected</span></span>
+        <button class="secondary" id="connect" type="button">Connect printer</button>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <section class="compose" aria-labelledby="compose-heading">
+        <h2 id="compose-heading">Compose</h2>
+        <div class="text-heading">
+          <label for="text">Text</label>
+          <label class="size-control" for="size">Size
+            <select id="size">
+              <option value="18">Small</option>
+              <option value="24" selected>Medium</option>
+              <option value="32">Large</option>
+            </select>
+          </label>
+        </div>
+        <textarea id="text" maxlength="8000" rows="5" placeholder="Write a note, list, or caption…"></textarea>
+
+        <div class="image-heading">Image</div>
+        <label class="drop-area" id="drop-area" for="image">
+          <input class="visually-hidden" type="file" id="image" accept="image/*">
+          <span class="plus" aria-hidden="true">+</span>
+          <span><strong>Choose an image</strong><small>or drop it here</small></span>
+        </label>
+        <div class="file-row" id="file-row" hidden>
+          <span id="file-name"></span>
+          <button type="button" id="remove" class="quiet">Remove</button>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="print" type="button" disabled>Print slip</button>
+          <button type="button" class="quiet" id="clear" disabled>Clear</button>
+        </div>
+        <p id="message" class="message" role="status"></p>
+      </section>
+
+      <section class="preview" aria-labelledby="preview-heading">
+        <div class="preview-heading">
+          <h2 id="preview-heading">Print preview</h2>
+          <span>58 mm paper</span>
+        </div>
+        <div class="paper-stage">
+          <div class="paper-slot"></div>
+          <div class="paper">
+            <p id="empty">Your slip will appear here.</p>
+            <canvas id="preview" width="384" height="1" role="img" aria-label="Black-and-white print preview" hidden></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <details id="help">
+      <summary>Connection and installation help</summary>
+      <div class="help-content">
+        <p><strong>Android:</strong> Open this page in Chrome, then tap Connect printer. Use Chrome’s Install app option to add it to your home screen.</p>
+        <p><strong>iPhone:</strong> Open the GitHub Pages URL in <a href="https://apps.apple.com/app/id1492822055">Bluefy</a> for direct Bluetooth. To print from Safari, run <code>./yhk web --share</code> on your Mac and open the address it displays on the same Wi-Fi.</p>
+        <p><strong>Mac:</strong> Use Chrome for direct Bluetooth, or run <code>./yhk web</code> to print through the Mac in Safari.</p>
+        <p>Keep the printer on and nearby. Disconnect it from other printing apps before connecting here.</p>
+      </div>
+    </details>
+  </main>
+
+  <footer>
+    <span>Print jobs go directly to the printer or through your Mac.</span>
+    <a href="https://github.com/anima-regem/yhk-print">Source on GitHub</a>
+  </footer>
+
+  <dialog id="pairing" aria-labelledby="pairing-title">
+    <form id="pairing-form" method="dialog">
+      <h2 id="pairing-title">Connect to your Mac</h2>
+      <label for="key">Pairing key from the Mac terminal</label>
+      <input id="key" type="text" required autocomplete="off" autocapitalize="none" spellcheck="false">
+      <div class="actions">
+        <button type="submit" class="primary">Connect</button>
+        <button type="button" id="cancel-pairing" class="quiet">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

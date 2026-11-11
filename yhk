@@ -1,0 +1,58 @@
+#!/bin/bash
+set -euo pipefail
+caller="$PWD"
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+project="$(pwd -P)"
+
+if [[ "${1:-}" == --help || "${1:-}" == -h || "$#" == 0 ]]; then
+  cat <<'HELP'
+Usage:
+  ./yhk print --text 'Hello from my Mac'
+  ./yhk print --text - < message.txt
+  ./yhk print --image photo.jpg [--text 'A caption']
+  ./yhk status
+  ./yhk web [--share] [--port 7314] [--no-open]
+
+Use --size 18, 24, or 32 to set the text size in printer dots.
+HELP
+  exit 0
+fi
+
+build="$project/.build"
+fingerprint="$(cat Sources/*.swift Sources/Info.plist | shasum -a 256 | cut -c1-20)"
+bundle="$build/$fingerprint/YHK Print.app"
+printer="$bundle/Contents/MacOS/YHKPrint"
+
+if [[ ! -x "$printer" ]]; then
+  if ! xcrun --find swiftc >/dev/null 2>&1; then
+    echo 'Install the Xcode Command Line Tools with xcode-select --install, then retry.' >&2
+    exit 1
+  fi
+  mkdir -p "$build"
+  staging="$(mktemp -d "$build/.compile.XXXXXX")"
+  trap 'rm -rf -- "$staging"' EXIT
+  app="$staging/YHK Print.app"
+  mkdir -p "$app/Contents/MacOS" "$build/$fingerprint"
+  cp Sources/Info.plist "$app/Contents/Info.plist"
+  xcrun swiftc -O -swift-version 5 Sources/*.swift -o "$app/Contents/MacOS/YHKPrint"
+  codesign --force --sign - "$app" 2>/dev/null
+  if ! mv -n "$app" "$bundle" 2>/dev/null && [[ ! -x "$printer" ]]; then
+    echo 'Could not install the compiled printer tool.' >&2
+    exit 1
+  fi
+  rm -rf -- "$staging"
+  trap - EXIT
+fi
+
+if [[ "$1" == web ]]; then
+  shift
+  if ! command -v python3 >/dev/null; then
+    echo 'The web interface requires Python 3.' >&2
+    exit 1
+  fi
+  exec python3 "$project/server.py" --printer "$printer" "$@"
+fi
+
+# Resolve relative user paths from the shell's original directory.
+cd -- "$caller"
+exec "$printer" "$@"
