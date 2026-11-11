@@ -93,10 +93,19 @@ export class BrowserPrinter {
       await this.write(Uint8Array.of(0x1b, 0x40));
       started = true;
       await wait(25);
+      const combineRowWrites = this.device?.name === "YHK-7314";
+      const rowPacket = new Uint8Array(rowHeader.length + rowBytes);
+      rowPacket.set(rowHeader);
       for (let offset = 0; offset < raster.length; offset += rowBytes) {
-        await this.write(rowHeader);
-        await wait(25);
-        await this.write(raster.subarray(offset, offset + rowBytes));
+        const row = raster.subarray(offset, offset + rowBytes);
+        if (combineRowWrites) {
+          rowPacket.set(row, rowHeader.length);
+          await this.write(rowPacket);
+        } else {
+          await this.write(rowHeader);
+          await wait(25);
+          await this.write(row);
+        }
         await wait(25);
         if (offset % (rowBytes * 8) === 0) progress(offset / raster.length);
       }

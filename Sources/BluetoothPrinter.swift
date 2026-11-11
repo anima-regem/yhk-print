@@ -4,6 +4,7 @@ import Foundation
 
 final class BluetoothPrinter: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     static let name = "YHK-7314"
+    private static let rowHeader = Data([0x1d, 0x76, 0x30, 0, UInt8(Raster.rowBytes), 0, 1, 0])
     private let serviceID = CBUUID(string: "49535343-FE7D-4AE5-8FA9-9FAFD205E455")
     private let writeID = CBUUID(string: "49535343-8841-43F4-A8D4-ECBE34729BB3")
     private let notifyID = CBUUID(string: "49535343-1E4D-4BD9-BA61-23C647249616")
@@ -20,10 +21,12 @@ final class BluetoothPrinter: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     init(raster: Data?) {
         if let raster {
             var packets = [Data([0x1b, 0x40])]
-            let header = Data([0x1d, 0x76, 0x30, 0, UInt8(Raster.rowBytes), 0, 1, 0])
+            // The YHK-7314 drops rows from multi-row commands. Sending the header
+            // and pixels together reduces the pause between one-row commands.
             for offset in stride(from: 0, to: raster.count, by: Raster.rowBytes) {
-                packets.append(header)
-                packets.append(raster.subdata(in: offset..<(offset + Raster.rowBytes)))
+                var row = Self.rowHeader
+                row.append(raster.subdata(in: offset..<(offset + Raster.rowBytes)))
+                packets.append(row)
             }
             packets.append(Data([0x1b, 0x64, 0x05, 0x0a, 0x0a, 0x0a]))
             self.packets = packets
@@ -103,7 +106,7 @@ final class BluetoothPrinter: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     func peripheral(_ device: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard let writer = service.characteristics?.first(where: { $0.uuid == writeID && $0.properties.contains(.write) }),
               let receiver = service.characteristics?.first(where: { $0.uuid == notifyID && $0.properties.contains(.notify) }),
-              device.maximumWriteValueLength(for: .withResponse) >= Raster.rowBytes else {
+              device.maximumWriteValueLength(for: .withResponse) >= Self.rowHeader.count + Raster.rowBytes else {
             fail("This Bluetooth connection does not support the YHK-7314 write and status characteristics.")
         }
         self.writer = writer
