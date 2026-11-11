@@ -16,32 +16,33 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="brand"><img src="./icons/icon-192.png" alt="" width="40" height="40"> <span>YHK Print</span></div>
+    <div class="brand">
+      <img src="./icons/icon-192.png" alt="" width="36" height="36">
+      <h1>YHK Print</h1>
+    </div>
+    <div class="printer">
+      <span id="connection" class="connection" aria-live="polite"><span class="dot"></span><span id="connection-label">YHK-7314 · Disconnected</span></span>
+      <button class="secondary" id="connect" type="button">Connect printer</button>
+    </div>
     <button id="install" class="secondary" type="button" hidden>Install app</button>
+    <p id="connection-message" class="message" role="status"></p>
   </header>
 
   <main>
-    <div class="intro">
-      <h1>Print a slip</h1>
-      <div class="printer">
-        <span id="connection" class="connection" aria-live="polite"><span class="dot"></span><span id="connection-label">YHK-7314 · Disconnected</span></span>
-        <button class="secondary" id="connect" type="button">Connect printer</button>
-      </div>
-    </div>
 
     <details id="relay-setup" class="relay-setup" hidden>
       <summary>Print through your Mac</summary>
       <div class="help-content">
-        <p>Firefox and other browsers without Web Bluetooth can send jobs through the Mac relay.</p>
-        <p><strong>On your Mac:</strong> Run <code>./yhk web --no-open</code>, then <a href="http://127.0.0.1:7314/">open the local print app</a> in this browser.</p>
-        <p><strong>On your phone:</strong> Run <code>./yhk web --share --no-open</code> on your Mac. Connect both devices to the same Wi-Fi and open the address shown in the Mac terminal.</p>
+        <p>The Mac relay connects to the printer over Bluetooth.</p>
+        <p>On your Mac, run <code>./yhk web --no-open</code> and <a href="http://127.0.0.1:7314/">open the local print app</a>.</p>
+        <p>On your phone, join the same Wi-Fi as your Mac. Run <code>./yhk web --share --no-open</code> on the Mac and open the address it shows on your phone.</p>
         <p><a href="https://github.com/anima-regem/yhk-print#mac-relay">Mac relay setup instructions</a></p>
       </div>
     </details>
 
     <div class="workspace">
       <section class="compose" aria-labelledby="compose-heading">
-        <h2 id="compose-heading">Compose</h2>
+        <h2 id="compose-heading">Slip content</h2>
         <div class="text-heading">
           <label for="text">Text</label>
           <label class="size-control" for="size">Size
@@ -52,24 +53,20 @@
             </select>
           </label>
         </div>
-        <textarea id="text" maxlength="8000" rows="5" placeholder="Write a note, list, or caption…"></textarea>
+        <textarea id="text" maxlength="8000" rows="4" placeholder="Write a note or caption"></textarea>
 
         <div class="image-heading">Image</div>
         <label class="drop-area" id="drop-area" for="image">
           <input class="visually-hidden" type="file" id="image" accept="image/*">
-          <span class="plus" aria-hidden="true">+</span>
-          <span><strong>Choose an image</strong><small>or drop it here</small></span>
+          <strong>Choose an image</strong>
+          <small>or drop it here</small>
         </label>
         <div class="file-row" id="file-row" hidden>
           <span id="file-name"></span>
           <button type="button" id="remove" class="quiet">Remove</button>
         </div>
 
-        <div class="actions">
-          <button class="primary" id="print" type="button" disabled>Print slip</button>
-          <button type="button" class="quiet" id="clear" disabled>Clear</button>
-        </div>
-        <p id="message" class="message" role="status"></p>
+        <p id="compose-message" class="message" role="status"></p>
       </section>
 
       <section class="preview" aria-labelledby="preview-heading">
@@ -77,29 +74,33 @@
           <h2 id="preview-heading">Print preview</h2>
           <span>58 mm paper</span>
         </div>
-        <div class="paper-stage">
-          <div class="paper-slot"></div>
-          <div class="paper">
-            <p id="empty">Your slip will appear here.</p>
-            <canvas id="preview" width="384" height="1" role="img" aria-label="Black-and-white print preview" hidden></canvas>
-          </div>
+        <div class="paper" id="paper" role="region" aria-label="Slip on paper">
+          <p id="empty">Add text or an image to see the preview.</p>
+          <canvas id="preview" width="384" height="1" role="img" aria-label="Black-and-white print preview" hidden></canvas>
         </div>
       </section>
+      <div class="print-controls">
+        <p id="message" class="message" role="status"></p>
+        <div class="actions">
+          <button type="button" class="quiet" id="clear" disabled>Clear</button>
+          <button class="primary" id="print" type="button" disabled>Print slip</button>
+        </div>
+      </div>
     </div>
 
     <details id="help">
       <summary>Connection and installation help</summary>
       <div class="help-content">
-        <p><strong>Android:</strong> Open this page in Chrome, then tap Connect printer. Use Chrome’s Install app option to add it to your home screen.</p>
-        <p><strong>iPhone:</strong> Open the GitHub Pages URL in <a href="https://apps.apple.com/app/id1492822055">Bluefy</a> for direct Bluetooth.</p>
-        <p><strong>Firefox and Safari:</strong> Use the <a href="https://github.com/anima-regem/yhk-print#mac-relay">Mac relay</a> on your computer or phone.</p>
+        <p>On Android, open this page in Chrome and tap Connect printer. Choose Install app in Chrome's menu to add it to your home screen.</p>
+        <p>On iPhone, open this page in <a href="https://apps.apple.com/app/id1492822055">Bluefy</a> for direct Bluetooth.</p>
+        <p>In Firefox or Safari, use the <a href="https://github.com/anima-regem/yhk-print#mac-relay">Mac relay</a>.</p>
         <p>Keep the printer on and nearby. Disconnect it from other printing apps before connecting here.</p>
       </div>
     </details>
   </main>
 
   <footer>
-    <span>Print jobs go directly to the printer or through your Mac.</span>
+    <span>Your browser prepares each slip.</span>
     <a href="https://github.com/anima-regem/yhk-print">Source on GitHub</a>
   </footer>
 

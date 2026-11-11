@@ -7,12 +7,15 @@ const size = byID("size");
 const image = byID("image");
 const canvas = byID("preview");
 const empty = byID("empty");
+const paper = byID("paper");
 const printButton = byID("print");
 const connectButton = byID("connect");
 const clearButton = byID("clear");
 const installButton = byID("install");
 const dropArea = byID("drop-area");
 const message = byID("message");
+const connectionMessage = byID("connection-message");
+const composeMessage = byID("compose-message");
 const pairing = byID("pairing");
 const keyInput = byID("key");
 const relaySetup = byID("relay-setup");
@@ -30,12 +33,12 @@ let relayKey = "";
 let installPrompt;
 const direct = new BrowserPrinter(() => {
   setConnection();
-  if (!busy) announce("Printer disconnected. Connect again when you’re ready.");
+  if (!busy) announce(connectionMessage, "The printer disconnected.");
 });
 
-function announce(text, error = false) {
-  message.textContent = text;
-  message.classList.toggle("error", error);
+function announce(region, text, error = false) {
+  region.textContent = text;
+  region.classList.toggle("error", error);
 }
 
 function updateButtons() {
@@ -49,7 +52,7 @@ function setConnection(name = "") {
   connection = name;
   byID("connection").classList.toggle("connected", Boolean(name));
   const needsRelay = !checkingRelay && !relay && !canUseBluetooth;
-  const status = checkingRelay ? "Checking connection…" : needsRelay ? "Mac relay required" : "Disconnected";
+  const status = checkingRelay ? "Checking connection" : needsRelay ? "Mac relay required" : "Disconnected";
   byID("connection-label").textContent = name ? `${name} · Connected` : `YHK-7314 · ${status}`;
   connectButton.textContent = name ? "Disconnect" : needsRelay ? "Set up Mac relay" : "Connect printer";
   relaySetup.hidden = !needsRelay;
@@ -62,11 +65,12 @@ function updatePreview() {
     try {
       raster = render(canvas, text.value.trim(), photo, Number(size.value));
     } catch (error) {
-      announce(error.message, true);
+      announce(composeMessage, error.message, true);
     }
   }
   empty.hidden = raster !== null;
   canvas.hidden = raster === null;
+  paper.tabIndex = raster === null ? -1 : 0;
   updateButtons();
 }
 
@@ -83,7 +87,7 @@ async function loadImage(file) {
   const revision = ++imageRevision;
   if (file.size > 20 * 1024 * 1024) {
     loadingImage = false;
-    announce("Choose an image no larger than 20 MB.", true);
+    announce(composeMessage, "Choose an image no larger than 20 MB.", true);
     updateButtons();
     return;
   }
@@ -98,9 +102,12 @@ async function loadImage(file) {
     photo = decoded;
     byID("file-name").textContent = file.name;
     byID("file-row").hidden = false;
-    announce("");
+    announce(composeMessage, "");
+    announce(message, "");
   } catch {
-    if (revision === imageRevision) announce("Could not open that image. Try a PNG, JPEG, or another format your browser supports.", true);
+    if (revision === imageRevision) {
+      announce(composeMessage, "Could not open the image. Try a PNG or JPEG.", true);
+    }
   } finally {
     URL.revokeObjectURL(url);
     if (revision === imageRevision) {
@@ -131,13 +138,13 @@ async function relayRequest(route, payload) {
 async function connectRelay() {
   busy = true;
   updateButtons();
-  announce("Checking the printer through your Mac…");
+  announce(connectionMessage, "Checking the printer through your Mac.");
   try {
     await relayRequest("status", {});
     setConnection("YHK-7314 via Mac");
-    announce("");
+    announce(connectionMessage, "");
   } catch (error) {
-    announce(error.message, true);
+    announce(connectionMessage, error.message, true);
   } finally {
     busy = false;
     updateButtons();
@@ -148,7 +155,7 @@ connectButton.addEventListener("click", async () => {
   if (connection) {
     if (!relay) direct.disconnect();
     setConnection();
-    announce("");
+    announce(connectionMessage, "");
     return;
   }
   if (relay) {
@@ -163,12 +170,12 @@ connectButton.addEventListener("click", async () => {
   }
   busy = true;
   updateButtons();
-  announce("Choose your YHK printer in the Bluetooth picker.");
+  announce(connectionMessage, "Choose your YHK printer from the Bluetooth list.");
   try {
     setConnection(await direct.connect());
-    announce("");
+    announce(connectionMessage, "");
   } catch (error) {
-    announce(error.name === "NotFoundError" ? "No printer selected." : error.message, true);
+    announce(connectionMessage, error.name === "NotFoundError" ? "No printer selected." : error.message, true);
   } finally {
     busy = false;
     updateButtons();
@@ -188,37 +195,45 @@ printButton.addEventListener("click", async () => {
   if (!raster || !connection || busy) return;
   busy = true;
   updateButtons();
-  announce("Checking printer status…");
+  announce(message, "Checking printer status.");
   try {
     if (relay) {
       let binary = "";
       for (const byte of raster) binary += String.fromCharCode(byte);
-      announce("Sending through your Mac… Keep this page open.");
+      announce(message, "Sending through your Mac. Keep this page open.");
       await relayRequest("print", {raster: btoa(binary)});
     } else {
       await direct.print(raster, progress => {
         const percent = Math.round(progress * 100);
-        announce(percent === 100 ? "Finishing the print job…" : `Sending slip · ${percent}%`);
+        announce(message, percent === 100 ? "Finishing the print job." : `Sent ${percent}% of the slip.`);
       });
     }
-    announce("Print data sent. Check the paper.");
+    announce(message, "Print data sent. Check the paper.");
   } catch (error) {
-    announce(error.message, true);
+    announce(message, error.message, true);
   } finally {
     busy = false;
     updateButtons();
   }
 });
 
-text.addEventListener("input", () => { announce(""); updatePreview(); });
-size.addEventListener("change", () => { announce(""); updatePreview(); });
+function refreshDraft() {
+  announce(composeMessage, "");
+  announce(message, "");
+  updatePreview();
+}
+
+text.addEventListener("input", refreshDraft);
+size.addEventListener("change", refreshDraft);
 image.addEventListener("change", () => loadImage(image.files[0]));
-byID("remove").addEventListener("click", () => { clearImage(); announce(""); updatePreview(); });
+byID("remove").addEventListener("click", () => {
+  clearImage();
+  refreshDraft();
+});
 clearButton.addEventListener("click", () => {
   text.value = "";
   clearImage();
-  announce("");
-  updatePreview();
+  refreshDraft();
   text.focus();
 });
 dropArea.addEventListener("dragover", event => {

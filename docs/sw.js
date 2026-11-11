@@ -1,5 +1,5 @@
 const prefix = "yhk-print-";
-const cacheName = prefix + "v3";
+const cacheName = prefix + "v4";
 const files = [
   "./", "./index.html", "./style.css", "./app.js", "./raster.js", "./bluetooth.js",
   "./instrument-sans.woff2", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png",
